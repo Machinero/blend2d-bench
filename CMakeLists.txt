@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.16)
 cmake_policy(SET CMP0063 NEW) # Honor visibility properties.
 
 # Bench Project
@@ -7,7 +7,7 @@ cmake_policy(SET CMP0063 NEW) # Honor visibility properties.
 project(bl_bench CXX)
 include(FindPkgConfig)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 set(BLBENCH_DIR "${CMAKE_CURRENT_LIST_DIR}" CACHE PATH "BlBench directory")
 set(BLEND2D_DIR "${BLBENCH_DIR}/../blend2d" CACHE PATH "Location of 'blend2d'")
@@ -30,6 +30,8 @@ set(BLBENCH_SRC
   src/module_cairo.h
   src/module_qt.cpp
   src/module_qt.h
+  src/module_skia.cpp
+  src/module_skia.h
   src/shapes_data.cpp
   src/shapes_data.h
 )
@@ -227,10 +229,52 @@ if(Qt5Gui_FOUND)
   list(APPEND BLBENCH_DEFINITIONS BLBENCH_ENABLE_QT)
 endif()
 
+# Bench Module - SKIA
+# ----------------
+message("-- [blbench] adding support for SKIA")
+set(SKIA_SRC "${CMAKE_SOURCE_DIR}/3rdparty/skia")
+set(SKIA_HEADERS
+  ${SKIA_SRC}
+  ${SKIA_SRC}/include/
+	${SKIA_SRC}/include/c
+	${SKIA_SRC}/include/codec
+	${SKIA_SRC}/include/config
+	${SKIA_SRC}/include/core
+	${SKIA_SRC}/include/effects
+	${SKIA_SRC}/include/gpu
+	${SKIA_SRC}/include/gpu/gl
+	${SKIA_SRC}/include/pathops
+	${SKIA_SRC}/include/ports
+	${SKIA_SRC}/include/svg
+	${SKIA_SRC}/include/utils
+)
+
+set(SKIA_DEFINES
+	"SK_SAMPLES_FOR_X" # always set for linux, even if there's no X used
+	"SK_SUPPORT_GPU=1" # skia_enable_gpu
+  "SK_GL"
+)
+
+set(SKIA_LIBS
+  ${SKIA_SRC}/lib/libskia.so
+)
+
+# add_library(skia SHARED IMPORTED) # or STATIC instead of SHARED
+# set_target_properties(skia PROPERTIES
+
+#   IMPORTED_LOCATION "${SKIA_SRC}/lib/libskia.so"
+#   INTERFACE_INCLUDE_DIRECTORIES "${SKIA_HEADERS}"
+# )
+
+list(APPEND BLBENCH_INCLUDE_DIRS ${SKIA_HEADERS})
+list(APPEND BLBENCH_LIBRARIES ${SKIA_LIBS})
+list(APPEND BLBENCH_DEFINITIONS ${SKIA_DEFINES})
+
 # Bench Executable
 # ----------------
 
 add_executable(bl_bench ${BLBENCH_SRC} ${AGG_SRC})
+
 set_property(TARGET bl_bench PROPERTY CXX_VISIBILITY_PRESET hidden)
 set_property(TARGET bl_bench PROPERTY COMPILE_DEFINITIONS "${BLBENCH_DEFINITIONS}")
 set_property(TARGET bl_bench PROPERTY INCLUDE_DIRECTORIES "${BLBENCH_INCLUDE_DIRS}")

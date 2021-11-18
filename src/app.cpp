@@ -28,6 +28,7 @@
 #include "./app.h"
 #include "./images_data.h"
 #include "./module_blend2d.h"
+#include "./module_skia.h"
 
 #if defined(BLBENCH_ENABLE_AGG)
   #include "./module_agg.h"
@@ -296,12 +297,12 @@ bool BenchApp::isStyleEnabled(uint32_t style) {
     return true;
 
   // If this is not a deep run we just select the following styles to be tested:
-  return style == kBenchStyleSolid     ||
-         style == kBenchStyleLinearPad ||
-         style == kBenchStyleRadialPad ||
-         style == kBenchStyleConical   ||
-         style == kBenchStylePatternNN ||
-         style == kBenchStylePatternBI ;
+  return style == kBenchStyleSolid;   //||
+        //  style == kBenchStyleLinearPad ||
+        //  style == kBenchStyleRadialPad ||
+        //  style == kBenchStyleConical   ||
+        //  style == kBenchStylePatternNN ||
+        //  style == kBenchStylePatternBI ;
 }
 
 // ============================================================================
@@ -356,6 +357,11 @@ int BenchApp::run() {
       runModule(mod, params);
     }
 
+    {
+      SkiaModule mod;
+      runModule(mod, params);
+    }
+    
     #if defined(BLBENCH_ENABLE_AGG)
     {
       AGGModule mod;
