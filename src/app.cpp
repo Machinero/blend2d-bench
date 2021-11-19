@@ -42,6 +42,10 @@
   #include "./module_qt.h"
 #endif // BLBENCH_ENABLE_QT
 
+#ifdef SK_BENCH_GL
+  #include <GL/freeglut.h>
+#endif // SK_BENCH_GL
+
 #define ARRAY_SIZE(X) uint32_t(sizeof(X) / sizeof(X[0]))
 
 namespace blbench {
@@ -509,6 +513,10 @@ int main(int argc, char* argv[]) {
     printf("Failed to initialize bl_bench.\n");
     return 1;
   }
+
+  #ifdef SK_BENCH_GL
+    glutInit(&argc, argv);
+  #endif // SK_BENCH_GL
 
   return app.run();
 }

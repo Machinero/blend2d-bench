@@ -105,10 +105,22 @@ namespace blbench
         int h = int(_params.screenH);
         uint32_t style = _params.style;
 
-        // sk_sp<const GrGLInterface> interface = GrGLMakeNativeInterface();
-        // m_context = GrDirectContext::MakeGL(interface, {});
+        #ifdef SK_BENCH_GL
+        SkImageInfo info = SkImageInfo:: MakeN32Premul(w, h);
+        sk_sp<const GrGLInterface> interface = GrGLMakeNativeInterface();
+        m_context = GrDirectContext::MakeGL(interface);
+        m_surface = SkSurface::MakeRenderTarget(m_context.get(), SkBudgeted::kNo, info);
+        if (!m_surface)
+        {
+            SkDebugf("SkSurface::MakeRenderTarget returned null\n");
+            return;
+        }
+        m_canvas = m_surface->getCanvas();
+
+        #else
         m_surface = SkSurface::MakeRasterN32Premul(w, h);
         m_canvas = m_surface->getCanvas();
+        #endif // SK_BENCH_GL
     }
 
     void SkiaModule::onDoRectAligned(bool stroke)
@@ -118,6 +130,7 @@ namespace blbench
         int wh = _params.shapeSize;
 
         SkPaint paint;
+
         if (style == kBenchStyleSolid)
         {
             if (stroke)
@@ -199,7 +212,6 @@ namespace blbench
             {
                 paint.setStyle(SkPaint::Style::kStroke_Style);
                 paint.setStrokeWidth(SkScalar(_params.strokeWidth));
-                paint.setStrokeJoin(SkPaint::Join::kMiter_Join);
             }
             else
             {
@@ -273,7 +285,6 @@ namespace blbench
             {
                 paint.setStyle(SkPaint::Style::kStroke_Style);
                 paint.setStrokeWidth(SkScalar(_params.strokeWidth));
-                paint.setStrokeJoin(SkPaint::Join::kMiter_Join);
             }
             else
             {
@@ -281,11 +292,10 @@ namespace blbench
             }
 
             // Save canvas matrices state
-            m_canvas->restore();
-            m_canvas->save();
 
             for (uint32_t i = 0, quantity = _params.quantity; i < quantity; i++, angle += 0.01)
             {
+                m_canvas->save();
                 double radius = _rndExtra.nextDouble(4.0, 40.0);
                 BLRect rect(_rndCoord.nextRect(bounds, wh, wh));
                 BLRgba32 color = _rndColor.nextRgba32();
@@ -400,8 +410,9 @@ namespace blbench
 
             for (uint32_t i = 0, quantity = _params.quantity; i < quantity; i++)
             {
-                BLPoint base(_rndCoord.nextPoint(bounds));
                 m_canvas->save();
+
+                BLPoint base(_rndCoord.nextPoint(bounds));
                 m_canvas->translate(base.x, base.y);
 
                 BLRgba32 color = _rndColor.nextRgba32();
@@ -413,4 +424,3 @@ namespace blbench
         }
     }
 }
-

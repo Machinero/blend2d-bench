@@ -249,26 +249,27 @@ set(SKIA_HEADERS
 	${SKIA_SRC}/include/utils
 )
 
+find_package(GLUT)
+if(GLUT_FOUND)
 set(SKIA_DEFINES
-	"SK_SAMPLES_FOR_X" # always set for linux, even if there's no X used
-	"SK_SUPPORT_GPU=1" # skia_enable_gpu
-  "SK_GL"
+    "SK_SAMPLES_FOR_X" # always set for linux, even if there's no X used
+    "SK_SUPPORT_GPU=1" # skia_enable_gpu
+    "SK_GL"
+    "SK_BENCH_GL"
 )
+
+list(APPEND BLBENCH_INCLUDE_DIRS ${GLUT_INCLUDE_DIR})
+list(APPEND BLBENCH_LIBRARIES ${GLUT_LIBRARY})
+list(APPEND BLBENCH_DEFINITIONS ${SKIA_DEFINES})
+endif()
+
 
 set(SKIA_LIBS
   ${SKIA_SRC}/lib/libskia.so
 )
 
-# add_library(skia SHARED IMPORTED) # or STATIC instead of SHARED
-# set_target_properties(skia PROPERTIES
-
-#   IMPORTED_LOCATION "${SKIA_SRC}/lib/libskia.so"
-#   INTERFACE_INCLUDE_DIRECTORIES "${SKIA_HEADERS}"
-# )
-
 list(APPEND BLBENCH_INCLUDE_DIRS ${SKIA_HEADERS})
 list(APPEND BLBENCH_LIBRARIES ${SKIA_LIBS})
-list(APPEND BLBENCH_DEFINITIONS ${SKIA_DEFINES})
 
 # Bench Executable
 # ----------------
