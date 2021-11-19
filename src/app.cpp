@@ -28,6 +28,7 @@
 #include "./app.h"
 #include "./images_data.h"
 #include "./module_blend2d.h"
+#include "./module_skia.h"
 
 #if defined(BLBENCH_ENABLE_AGG)
   #include "./module_agg.h"
@@ -40,6 +41,10 @@
 #if defined(BLBENCH_ENABLE_QT)
   #include "./module_qt.h"
 #endif // BLBENCH_ENABLE_QT
+
+#ifdef SK_BENCH_GL
+  #include <GL/freeglut.h>
+#endif // SK_BENCH_GL
 
 #define ARRAY_SIZE(X) uint32_t(sizeof(X) / sizeof(X[0]))
 
@@ -296,12 +301,12 @@ bool BenchApp::isStyleEnabled(uint32_t style) {
     return true;
 
   // If this is not a deep run we just select the following styles to be tested:
-  return style == kBenchStyleSolid     ||
-         style == kBenchStyleLinearPad ||
-         style == kBenchStyleRadialPad ||
-         style == kBenchStyleConical   ||
-         style == kBenchStylePatternNN ||
-         style == kBenchStylePatternBI ;
+  return style == kBenchStyleSolid;   //||
+        //  style == kBenchStyleLinearPad ||
+        //  style == kBenchStyleRadialPad ||
+        //  style == kBenchStyleConical   ||
+        //  style == kBenchStylePatternNN ||
+        //  style == kBenchStylePatternBI ;
 }
 
 // ============================================================================
@@ -356,6 +361,11 @@ int BenchApp::run() {
       runModule(mod, params);
     }
 
+    {
+      SkiaModule mod;
+      runModule(mod, params);
+    }
+    
     #if defined(BLBENCH_ENABLE_AGG)
     {
       AGGModule mod;
@@ -503,6 +513,10 @@ int main(int argc, char* argv[]) {
     printf("Failed to initialize bl_bench.\n");
     return 1;
   }
+
+  #ifdef SK_BENCH_GL
+    glutInit(&argc, argv);
+  #endif // SK_BENCH_GL
 
   return app.run();
 }
